@@ -15,6 +15,30 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         <a routerLink="/" routerLinkActive="active">Home</a>
       </nav>
 
+      <nav class="navbar">
+        <a routerLink="/players" routerLinkActive="active">Players</a>
+      </nav>
+
+      <nav class="navbar">
+        <a routerLink="/create-guild" routerLinkActive="active">Create Guild</a>
+      </nav>
+
+      <nav class="navbar">
+        <a routerLink="/sign-in" routerLinkActive="active">Sign In</a>
+      </nav>
+
+      <nav class="navbar">
+        <a routerLink="/create-character" routerLinkActive="active"
+          >Create Character</a
+        >
+      </nav>
+
+      <nav class="navbar">
+        <a routerLink="/character-faction" routerLinkActive="active"
+          >Character Faction</a
+        >
+      </nav>
+
       <main class="content">
         <router-outlet />
       </main>
@@ -22,6 +46,32 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
       <footer class="footer">
         <nav class="footer-nav">
           <a routerLink="/" routerLinkActive="active">Home</a>
+        </nav>
+
+        <nav class="footer-nav">
+          <a routerLink="/players" routerLinkActive="active">Players</a>
+        </nav>
+
+        <nav class="footer-nav">
+          <a routerLink="/create-guild" routerLinkActive="active"
+            >Create Guild</a
+          >
+        </nav>
+
+        <nav class="footer-nav">
+          <a routerLink="/sign-in" routerLinkActive="active">Sign In</a>
+        </nav>
+
+        <nav class="footer-nav">
+          <a routerLink="/create-character" routerLinkActive="active"
+            >Create Character</a
+          >
+        </nav>
+
+        <nav class="footer-nav">
+          <a routerLink="/character-faction" routerLinkActive="active"
+            >Character Faction</a
+          >
         </nav>
         <p>&copy; 2025 RPG Character Builder</p>
       </footer>
