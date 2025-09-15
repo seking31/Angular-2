@@ -1,77 +1,82 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from './auth.service';
+import { CookieService } from 'ngx-cookie-service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
     <div class="wrapper">
       <header class="banner">
         <h1 class="title">RPG Character Builder</h1>
       </header>
 
+      <!-- Navigation -->
       <nav class="navbar">
-        <a routerLink="/" routerLinkActive="active">Home</a>
-      </nav>
-
-      <nav class="navbar">
+        <a
+          routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          >Home</a
+        >
         <a routerLink="/players" routerLinkActive="active">Players</a>
-      </nav>
-
-      <nav class="navbar">
         <a routerLink="/create-guild" routerLinkActive="active">Create Guild</a>
-      </nav>
-
-      <nav class="navbar">
-        <a routerLink="/sign-in" routerLinkActive="active">Sign In</a>
-      </nav>
-
-      <nav class="navbar">
         <a routerLink="/create-character" routerLinkActive="active"
           >Create Character</a
         >
-      </nav>
-
-      <nav class="navbar">
         <a routerLink="/character-faction" routerLinkActive="active"
           >Character Faction</a
         >
+
+        <!-- Auth controls -->
+        <span class="auth-controls" *ngIf="isAuthenticated; else signInLink">
+          Welcome {{ currentUserEmail }} |
+          <button class="signout-btn" (click)="signout()">Sign Out</button>
+        </span>
+        <ng-template #signInLink>
+          <a routerLink="/signin" routerLinkActive="active">Sign In</a>
+        </ng-template>
       </nav>
 
+      <!-- Main content -->
       <main class="content">
         <router-outlet />
       </main>
 
+      <!-- Footer -->
       <footer class="footer">
         <nav class="footer-nav">
-          <a routerLink="/" routerLinkActive="active">Home</a>
-        </nav>
-
-        <nav class="footer-nav">
+          <a
+            routerLink="/"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            >Home</a
+          >
           <a routerLink="/players" routerLinkActive="active">Players</a>
-        </nav>
-
-        <nav class="footer-nav">
           <a routerLink="/create-guild" routerLinkActive="active"
             >Create Guild</a
           >
-        </nav>
-
-        <nav class="footer-nav">
-          <a routerLink="/sign-in" routerLinkActive="active">Sign In</a>
-        </nav>
-
-        <nav class="footer-nav">
           <a routerLink="/create-character" routerLinkActive="active"
             >Create Character</a
           >
-        </nav>
-
-        <nav class="footer-nav">
           <a routerLink="/character-faction" routerLinkActive="active"
             >Character Faction</a
           >
+
+          <!-- Auth controls footer -->
+          <span
+            class="auth-controls"
+            *ngIf="isAuthenticated; else footerSignIn"
+          >
+            Welcome {{ currentUserEmail }} |
+            <button class="signout-btn" (click)="signout()">Sign Out</button>
+          </span>
+          <ng-template #footerSignIn>
+            <a routerLink="/signin" routerLinkActive="active">Sign In</a>
+          </ng-template>
         </nav>
         <p>&copy; 2025 RPG Character Builder</p>
       </footer>
@@ -106,6 +111,8 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         gap: 1rem;
         background: #2a2a33;
         padding: 0.5rem 1rem;
+        flex-wrap: wrap;
+        align-items: center;
       }
 
       .navbar a,
@@ -124,6 +131,26 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
         border-radius: 4px;
       }
 
+      .auth-controls {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .signout-btn {
+        background: #ef4444;
+        color: #fff;
+        border: none;
+        padding: 0.4rem 0.75rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .signout-btn:hover {
+        background: #dc2626;
+      }
+
       .content {
         flex: 1;
         padding: 1rem;
@@ -138,4 +165,25 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
     `,
   ],
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  isAuthenticated = false;
+  currentUserEmail: string | null = null;
+
+  constructor(
+    private authService: AuthService,
+    private cookieService: CookieService
+  ) {}
+
+  ngOnInit(): void {
+    this.authService.getAuthState().subscribe((state) => {
+      this.isAuthenticated = state;
+      this.currentUserEmail = state
+        ? this.cookieService.get('session_user')
+        : null;
+    });
+  }
+
+  signout(): void {
+    this.authService.signout();
+  }
+}
