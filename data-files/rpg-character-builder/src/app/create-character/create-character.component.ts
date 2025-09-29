@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { CharacterListComponent } from './character-list.component';
 
-interface Character {
+export interface Character {
   id: number;
   name: string;
   gender: 'Male' | 'Female' | 'Other';
@@ -11,7 +12,7 @@ interface Character {
 @Component({
   selector: 'app-create-character',
   standalone: true,
-  imports: [FormsModule], // ✅ No CommonModule needed since we're using @if/@for
+  imports: [FormsModule, CharacterListComponent],
   template: `
     <div class="character-form-container">
       <form
@@ -87,33 +88,7 @@ interface Character {
 
       <section class="character-list">
         <h1>Characters</h1>
-
-        @if (characters.length > 0) {
-        <table class="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Name</th>
-              <th>Gender</th>
-              <th>Class</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (ch of characters; track ch.id; let i = $index) {
-            <tr>
-              <td>{{ i + 1 }}</td>
-              <td>
-                <strong>{{ ch.name }}</strong>
-              </td>
-              <td>{{ ch.gender }}</td>
-              <td>{{ ch.charClass }}</td>
-            </tr>
-            }
-          </tbody>
-        </table>
-        } @else {
-        <p>No characters created yet.</p>
-        }
+        <app-character-list [characters]="characters"></app-character-list>
       </section>
     </div>
   `,
@@ -183,24 +158,6 @@ interface Character {
         margin-top: -2px;
         margin-bottom: 8px;
       }
-      .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-      }
-      .table th,
-      .table td {
-        border-bottom: 1px solid #444;
-        text-align: left;
-        padding: 8px;
-        color: #e0e3f5;
-      }
-      .table th {
-        color: #d49bae;
-      }
-      .table tr:hover {
-        background: #2a2d3e;
-      }
     `,
   ],
 })
@@ -218,6 +175,9 @@ export class CreateCharacterComponent {
 
   private nextId = 1;
 
+  /** Emits the full list whenever it changes */
+  @Output() charactersChange = new EventEmitter<Character[]>();
+
   onSubmit(form: any) {
     if (form.invalid) return;
 
@@ -228,7 +188,12 @@ export class CreateCharacterComponent {
       charClass: this.newCharacter.charClass as Character['charClass'],
     };
 
-    this.characters.push(character);
+    // Update state immutably for easier change detection
+    this.characters = [...this.characters, character];
+
+    // Emit the updated list to any parent that’s listening
+    this.charactersChange.emit([...this.characters]);
+
     this.resetForm(form);
   }
 

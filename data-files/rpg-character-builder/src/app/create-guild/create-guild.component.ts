@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -7,21 +7,15 @@ import {
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
+import { GuildListComponent, Guild } from './guild-list.component';
 
 type GuildType = 'Competitive' | 'Casual' | 'Educational';
 type NotificationPreference = 'Email' | 'SMS';
 
-interface Guild {
-  guildName: string;
-  description: string;
-  type: GuildType;
-  notificationPreference: NotificationPreference;
-}
-
 @Component({
   selector: 'app-create-guild',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, GuildListComponent],
   template: `
     <div class="guild-form-container">
       <form [formGroup]="guildForm" class="guild-form" (ngSubmit)="onSubmit()">
@@ -42,12 +36,12 @@ interface Guild {
               guildForm.get('guildName')?.invalid
             "
           >
-            <small *ngIf="guildForm.get('guildName')?.errors?.['required']"
-              >Guild name is required.</small
-            >
-            <small *ngIf="guildForm.get('guildName')?.errors?.['maxlength']"
-              >Max 100 characters.</small
-            >
+            <small *ngIf="guildForm.get('guildName')?.errors?.['required']">
+              Guild name is required.
+            </small>
+            <small *ngIf="guildForm.get('guildName')?.errors?.['maxlength']">
+              Max 100 characters.
+            </small>
           </div>
 
           <label>Description</label>
@@ -63,18 +57,18 @@ interface Guild {
               guildForm.get('description')?.invalid
             "
           >
-            <small *ngIf="guildForm.get('description')?.errors?.['required']"
-              >Description is required.</small
-            >
-            <small *ngIf="guildForm.get('description')?.errors?.['maxlength']"
-              >Max 1000 characters.</small
-            >
+            <small *ngIf="guildForm.get('description')?.errors?.['required']">
+              Description is required.
+            </small>
+            <small *ngIf="guildForm.get('description')?.errors?.['maxlength']">
+              Max 1000 characters.
+            </small>
           </div>
 
           <label>Type</label>
           <select formControlName="type">
             <option [value]="null" disabled>Select a type</option>
-            @for(t of guildTypes; track t) {
+            @for (t of guildTypes; track t) {
             <option [value]="t">{{ t }}</option>
             }
           </select>
@@ -88,7 +82,7 @@ interface Guild {
           </div>
 
           <label>Notification Preference</label>
-          @for(option of notificationOptions; track option) {
+          @for (option of notificationOptions; track option) {
           <input
             type="radio"
             [value]="option"
@@ -128,24 +122,14 @@ interface Guild {
         </fieldset>
       </form>
 
+      <!-- Child display component -->
       <div class="guilds">
-        <h1>Created Guilds</h1>
-        <div class="guilds-container">
-          @for(guild of createdGuilds; track guild) {
-          <div class="guild-card">
-            <h2>{{ guild.guildName }}</h2>
-            <h3>Type:</h3>
-            <p>{{ guild.type }}</p>
-            <h3>Notification Preference:</h3>
-            <p>{{ guild.notificationPreference }}</p>
-            <h3>Description:</h3>
-            <p>{{ guild.description }}</p>
-          </div>
-          }
-        </div>
-        <p *ngIf="createdGuilds.length === 0" class="empty">
-          Use the form above to create your first guild.
-        </p>
+        <app-guild-list
+          [guilds]="createdGuilds"
+          (remove)="removeGuild($event)"
+          (clearAll)="clearAllGuilds()"
+        >
+        </app-guild-list>
       </div>
     </div>
   `,
@@ -164,53 +148,24 @@ interface Guild {
         width: 100%;
         margin-bottom: 20px;
       }
-      .guilds-container {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 20px;
-      }
-      .guild-card {
-        flex: 0 0 calc(50% - 20px);
-        box-sizing: border-box;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 10px 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-      }
       label {
         display: block;
         margin-bottom: 5px;
       }
-      label:first-of-type {
-        margin-top: 0;
-      }
       label:not(:first-of-type) {
         margin-top: 10px;
       }
-
-      select {
-        width: 40%;
-        display: block;
-        margin-bottom: 5px;
-        padding: 8px;
-        box-sizing: border-box;
-      }
-      textarea {
-        width: 100%;
-        margin-bottom: 5px;
-        padding: 8px;
-        box-sizing: border-box;
-      }
+      select,
+      textarea,
       input[type='text'] {
         width: 100%;
         margin-bottom: 5px;
         padding: 8px;
         box-sizing: border-box;
       }
-
+      select {
+        width: 40%;
+      }
       input[type='submit'] {
         display: block;
         padding: 8px 12px;
@@ -218,29 +173,29 @@ interface Guild {
         box-sizing: border-box;
         float: right;
         color: white;
+        background: #3b82f6;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
       }
-
+      input[type='submit']:disabled {
+        background: #93c5fd;
+        cursor: not-allowed;
+      }
       input[type='checkbox'],
       input[type='radio'] {
-        box-sizing: border-box;
         margin-bottom: 10px;
       }
-
       fieldset {
         margin-bottom: 20px;
       }
       .terms {
         margin-top: 10px;
       }
-
       .error {
         color: #b91c1c;
         font-size: 0.9rem;
         margin: 4px 0 0 0;
-      }
-      .empty {
-        color: #6b7280;
-        font-style: italic;
       }
     `,
   ],
@@ -251,25 +206,21 @@ export class CreateGuildComponent {
   createdGuilds: Guild[] = [];
 
   guildForm: FormGroup = this.fb.group({
-    guildName: [
-      null,
-      Validators.compose([Validators.required, Validators.maxLength(100)]),
-    ],
-    description: [
-      null,
-      Validators.compose([Validators.required, Validators.maxLength(1000)]),
-    ],
+    guildName: [null, [Validators.required, Validators.maxLength(100)]],
+    description: [null, [Validators.required, Validators.maxLength(1000)]],
     type: [null, Validators.required],
     notificationPreference: [null, Validators.required],
     acceptTerms: [false, Validators.requiredTrue],
   });
 
+  @Output() guildsChange = new EventEmitter<Guild[]>();
+
   constructor(private fb: FormBuilder) {}
 
-  createGuild() {
-    const { acceptTerms, ...value } = this.guildForm.value;
-    this.createdGuilds.push(value as Guild);
-    console.log('Created guild:', value);
+  /** New public method for tests */
+  public createGuild(newGuild: Guild) {
+    this.createdGuilds = [...this.createdGuilds, newGuild];
+    this.guildsChange.emit([...this.createdGuilds]);
     alert('Guild created');
   }
 
@@ -278,7 +229,11 @@ export class CreateGuildComponent {
       this.guildForm.markAllAsTouched();
       return;
     }
-    this.createGuild();
+    const { acceptTerms, ...value } = this.guildForm.value;
+    const newGuild = value as Guild;
+
+    this.createGuild(newGuild);
+
     this.guildForm.reset({
       guildName: null,
       description: null,
@@ -286,5 +241,17 @@ export class CreateGuildComponent {
       notificationPreference: null,
       acceptTerms: false,
     });
+  }
+
+  removeGuild(guildName: string) {
+    this.createdGuilds = this.createdGuilds.filter(
+      (g) => g.guildName !== guildName
+    );
+    this.guildsChange.emit([...this.createdGuilds]);
+  }
+
+  clearAllGuilds() {
+    this.createdGuilds = [];
+    this.guildsChange.emit([]);
   }
 }
